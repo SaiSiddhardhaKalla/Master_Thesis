@@ -11,6 +11,9 @@ log using "test.log", replace
 
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
+******************************************************* ALL INDIA ***************************************************************************************
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
 
 clear all
 import delimited "ma_ntl_data.csv", clear
@@ -34,10 +37,12 @@ label var med "Medical Facilities"
 label var road "Availability of Rural Roads"
 label var agro "Agricultural Facilities"
 label var area_sq_km "Village Area (in sq. km)"
+label var agroshare "Share of households in Agriculture"
+label var bpl "Share of households BPL"
+
+levelsof state_name, local(states_list)
 
 // destring avg_ntl, replace
-
-
 
 reg lnavg_ntl transportadmin edu med road agro															, robust
 	est store a1
@@ -50,20 +55,67 @@ reg lnavg_ntl transportadmin edu med road agro nearest_urban_proximity lntotalpo
 reg lnavg_ntl transportadmin edu med road agro nearest_urban_proximity lntotalpop area_sq_km 	i.states, robust
 	est store a4
 	estadd local fe Yes
-
 reg lnavg_ntl transportadmin edu med road agro nearest_urban_proximity lntotalpop area_sq_km ///
-																				  agroshare bpl i.states, robust	
+																				  agroshare bpl i.states, robust
+	est store a5
+	estadd local fe Yes
 	
-	
-esttab a1 a2 a4 using "table_1_IN.tex", replace ///
+esttab a1 a2 a4 a5 using "table_1_IN.tex", replace ///
 	keep(transportadmin edu med ///
-			road agro lntotalpop area_sq_km _cons) ///
+			road agro lntotalpop area_sq_km agroshare bpl _cons) ///
 	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
 	label stats(r2 fe N, fmt(%9.4f %9.0f %9.0fc) ///
 	labels("R-squared" "State FEs" "Number of observations")) ///
 	plain b(%9.4f) se(%9.4f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 
-		
+
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+******************************************************* States ******************************************************************************************
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+cls
+clear all
+import delimited "ma_ntl_data.csv", clear
+
+encode district_name, gen (dist)
+encode state_name, gen (states)
+
+gen lnavg_ntl = ln(avg_ntl)
+gen lntotalhousehold =ln(total_hhd) 
+gen lntotalpop =ln(total_population) 
+
+gen agroshare = total_hhd_engaged_in_farm_activi/total_hhd
+gen bpl = total_hhd_having_bpl_cards/total_hhd
+
+label var avg_ntl "Average Radiance"
+label var lnavg_ntl "log(Average Radiance)"
+label var lntotalpop "log(Population)"
+label var transportadmin "Transport/Admin Facilities"
+label var edu "Educational Facilities"
+label var med "Medical Facilities"
+label var road "Availability of Rural Roads"
+label var agro "Agricultural Facilities"
+label var area_sq_km "Village Area (in sq. km)"
+label var agroshare "Share of households in Agriculture"
+label var bpl "Share of households BPL"
+
+keep if state_name == "WEST BENGAL"
+reg lnavg_ntl transportadmin edu med road agro nearest_urban_proximity lntotalpop area_sq_km ///
+																				  agroshare bpl i.dist, robust
+	est store b1
+	estadd local fe Yes
+
+esttab b1 using "state_WB.csv", replace ///
+	keep(transportadmin edu med ///
+			road agro lntotalpop area_sq_km agroshare bpl _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe N, fmt(%9.4f %9.0f %9.0fc) ///
+	labels("R-squared" "State FEs" "Number of observations")) ///
+	plain b(%9.4f) se(%9.4f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
+
 
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
