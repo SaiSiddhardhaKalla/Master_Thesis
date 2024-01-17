@@ -140,5 +140,332 @@ reg lnavg_rad_2sd transportadmin education medical roads agro lntotalpop i.state
 
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
+******************************************************* Gini ********************************************************************************************
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
 
+clear all
+import delimited "2020data.csv", clear
+
+encode state, gen (states)
+encode district, gen (dist)
+
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum									, robust
+	est store a1
+	estadd local fe No
+	estadd local sfe No
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum 								i.states, robust
+	est store a2
+	estadd local fe No
+	estadd local sfe Yes
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum subdist_population subdist_area num, robust
+	est store a3
+	estadd local fe Yes
+	estadd local sfe No
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum subdist_population subdist_area num i.states, robust
+	est store a4
+	estadd local fe Yes
+	estadd local sfe Yes
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum subdist_population subdist_area num i.dist, robust
+	est store a5
+	estadd local fe Yes
+	estadd local sfe District	
+
+esttab a1 a2 a3 a4 a5 using "table_3_IN.tex", replace ///
+	keep(subdist_agro_sum subdist_med_sum ///
+			subdist_edu_sum subdist_transportadmin_sum subdist_population subdist_area num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
+	
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+clear all
+import delimited "2020distdata.csv", clear
+
+encode state, gen (states)
+
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum									, robust
+	est store b1
+	estadd local fe No
+	estadd local sfe No
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum 								i.states, robust
+	est store b2
+	estadd local fe No
+	estadd local sfe Yes
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum dist_population subdist_area num, robust
+	est store b3
+	estadd local fe Yes
+	estadd local sfe No
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum dist_population subdist_area num i.states, robust
+	est store b4
+	estadd local fe Yes
+	estadd local sfe Yes
+	
+esttab b1 b2 b3 b4 using "table_4_IN.tex", replace ///
+	keep(subdist_agro_sum subdist_med_sum ///
+			subdist_edu_sum subdist_transportadmin_sum dist_population subdist_area num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
+
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+clear all
+import delimited "panel_WCV_2020_full.csv", clear
+
+encode state, gen (states)
+encode district, gen (dist)
+
+reg wcv subdist_agro_sum_x subdist_med_sum_x ///
+	subdist_edu_sum_x subdist_transportadmin_sum_x subdist_population subdist_area_x num i.dist, robust
+	est store a5
+	estadd local fe Yess
+	estadd local sfe District	
+
+esttab a5 using "table_3aWCV_IN.tex", replace ///
+	keep(subdist_agro_sum_x subdist_med_sum_x ///
+			subdist_edu_sum_x subdist_transportadmin_sum_x subdist_population subdist_area_x num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
+
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+clear all
+import delimited "panel_theil_2020.csv", clear
+
+encode state, gen (states)
+encode district, gen (dist)
+
+reg theil subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum subdist_population subdist_area num i.dist, robust
+	est store a5
+	estadd local fe Yes
+	estadd local sfe District
+	
+esttab a5 using "table_3btheil_IN.tex", replace ///
+	keep(subdist_agro_sum subdist_med_sum ///
+			subdist_edu_sum subdist_transportadmin_sum subdist_population subdist_area num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
+
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+clear all
+import delimited "2020catdata.csv", clear
+
+encode state, gen (states)
+encode district, gen (dist)
+
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road subdist_population subdist_area num i.dist, robust
+	est store a5
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road					, robust
+	est store a1
+	estadd local fe No
+	estadd local sfe No
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road					i.states, robust
+	est store a2
+	estadd local fe No
+	estadd local sfe Yes
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road subdist_population subdist_area num, robust
+	est store a3
+	estadd local fe Yes
+	estadd local sfe No
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road subdist_population subdist_area num i.states, robust
+	est store a4
+	estadd local fe Yes
+	estadd local sfe State
+	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum villages_road subdist_population subdist_area num i.dist		, robust
+	est store a6
+	estadd local fe Yes
+	estadd local sfe District	
+	
+reg alesina subdist_agro_sum availability_of_phc_chc availability_of_jan_aushadhi_ken ///
+	is_aanganwadi_centre_available ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road subdist_population subdist_area num i.dist, robust	
+	est store a7
+	estadd local fe Yes
+	estadd local sfe District
+/*	
+reg alesina subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum													, robust	
+
+reg alesina subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum subdist_population subdist_area num 				, robust	
+
+reg alesina subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum										i.states	, robust
+		
+reg alesina subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum subdist_population subdist_area num i.dist		, robust	
+*/
+esttab a1 a2 a3 a4 a5 a6 a7 using "table_3a_IN.tex", replace ///
+	keep(subdist_agro_sum subdist_med_sum ///
+			subdist_edu_sum subdist_transportadmin_sum villages_road ///
+			availability_of_primary_school availability_of_middle_school ///
+			availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+			availability_of_phc_chc availability_of_jan_aushadhi_ken is_aanganwadi_centre_available ///
+			subdist_population subdist_area num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 	
+	
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+clear all
+import delimited "2020cat_t_data.csv", clear
+
+encode state, gen (states)
+encode district, gen (dist)
+
+reg theil subdist_agro_sum subdist_med_sum ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road subdist_population subdist_area num i.dist, robust
+	est store a1
+	estadd local fe Yes
+	estadd local sfe District
+	
+reg theil subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum villages_road subdist_population subdist_area num i.dist, robust
+	est store a2
+	estadd local fe Yes
+	estadd local sfe District
+	
+reg theil subdist_agro_sum availability_of_phc_chc availability_of_jan_aushadhi_ken ///
+	is_aanganwadi_centre_available ///
+	subdist_edu_sum subdist_transportadmin_sum villages_road subdist_population subdist_area num i.dist, robust	
+	est store a3
+	estadd local fe Yes
+	estadd local sfe District
+
+esttab a1 a2 a3 using "table_3atheil_IN.tex", replace ///
+	keep(subdist_agro_sum subdist_med_sum ///
+			subdist_edu_sum subdist_transportadmin_sum villages_road ///
+			availability_of_primary_school availability_of_middle_school ///
+			availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+			availability_of_phc_chc availability_of_jan_aushadhi_ken is_aanganwadi_centre_available ///
+			subdist_population subdist_area num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 	
+/*	
+reg theil subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum	villages_road									, robust	
+
+reg theil subdist_agro_sum subdist_med_sum ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum villages_road subdist_population subdist_area num, robust	
+*/
+
+
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+
+clear all
+import delimited "2020cat_w_data.csv", clear
+
+encode state, gen (states)
+encode district, gen (dist)
+
+reg wcv subdist_agro_sum_x subdist_med_sum_x ///
+	subdist_edu_sum_x subdist_transportadmin_sum_x subdist_population subdist_area_x num i.dist, robust
+	est store a1
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg wcv subdist_agro_sum_x subdist_med_sum_x ///
+	availability_of_primary_school availability_of_middle_school ///
+	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+	subdist_transportadmin_sum_x villages_road_x subdist_population subdist_area_x num i.dist, robust
+	est store a2
+	estadd local fe Yes
+	estadd local sfe District
+	
+reg wcv subdist_agro_sum_x availability_of_phc_chc availability_of_jan_aushadhi_ken ///
+	is_aanganwadi_centre_available ///
+	subdist_edu_sum_x subdist_transportadmin_sum_x villages_road_x subdist_population subdist_area_x num i.dist, robust	
+	est store a3
+	estadd local fe Yes
+	estadd local sfe District
+
+esttab a1 a2 a3 using "table_3awcv_IN.tex", replace ///
+	keep(subdist_agro_sum_x subdist_med_sum_x ///
+			subdist_edu_sum_x subdist_transportadmin_sum_x villages_road_x ///
+			availability_of_primary_school availability_of_middle_school ///
+			availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
+			availability_of_phc_chc availability_of_jan_aushadhi_ken is_aanganwadi_centre_available ///
+			subdist_population subdist_area_x num _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
+
+*********************************************************************************************************************************************************
+*********************************************************************************************************************************************************
+	
 log close 
