@@ -235,8 +235,9 @@ esttab b1 b2 b3 b4 using "table_4_IN.tex", replace ///
 *********************************************************************************************************************************************************
 cls
 clear all
-import delimited "2020catdata.csv", clear
+import delimited "2020catdata_uncensored.csv", clear
 
+keep if alesina >0
 encode state, gen (states)
 encode district, gen (dist)
 gen farm = total_hhd_engaged_in_farm_activi/total_hhd
@@ -252,7 +253,7 @@ gen sscschool_per_1000 = availability_of_ssc_school/no_1000s
 //keep if state != "GOA"
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
-global inf subdist_agro_sum subdist_transportadmin_sum villages_road 
+global inf subdist_agro_sum subdist_transportadmin_sum share_roads
 global con subdist_population subdist_area num nearest_urban_proximity
 global edu2 primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
@@ -274,8 +275,11 @@ label var availability_of_ssc_school "Sum of SSC Schools"
 label var availability_of_govt_degree_coll "Sum of Govt. Degree Colleges"
 label var farm "Share of Households in agriculture"
 
+
+keep if dist_ntl_pc <= 0.04
 reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
-//reg alesina med_per_1000 subdist_edu_sum $inf $con i.dist,robust
+reg alesina med_per_1000 edu_per_1000 $inf $con i.dist,robust
+reg alesina med_per_1000 primaryschool_per_100 $inf $con i.dist,robust
 	est store a5
 	estadd local fe Yes
 	estadd local sfe District	
@@ -825,6 +829,7 @@ reg theil subdist_agro_sum subdist_med_sum ///
 	availability_of_high_school availability_of_ssc_school availability_of_govt_degree_coll ///
 	subdist_transportadmin_sum villages_road subdist_population subdist_area num, robust	
 */
+
 
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
