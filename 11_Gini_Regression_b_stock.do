@@ -17,34 +17,33 @@ clear all
 import delimited "2020catdata_uncensored.csv", clear
 //import delimited "2020catdata.csv", clear
 
+set matsize 6000
+
 keep if alesina >0
+keep if num >8
+keep if dist_ntl_pc <= 0.1
 encode state, gen (states)
 encode district, gen (dist)
 gen farm = total_hhd_engaged_in_farm_activi/total_hhd
 replace str = "." if str == ""
 replace str = "." if str == "inf"
 destring str, generate(st_ratio)
+/*
+destring ps_share_elec, generate(ps_elec)
+destring ps_share_toil, generate(ps_toil)
+destring ps_share_clab, generate(ps_clab)
+destring ps_share_play, generate(ps_play)
+destring ps_share_dwat, generate(ps_watr)
+destring ps_share_meal, generate(ps_meal)
+*/
 
 gen pschool_per_1000 = availability_of_primary_school/no_1000s
 gen midschool_per_1000 = availability_of_middle_school/no_1000s
 gen highschool_per_1000 = availability_of_high_school/no_1000s
 gen sscschool_per_1000 = availability_of_ssc_school/no_1000s
 gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
-
-//keep if state != "GOA"
-//keep if state != "ANDAMAN AND NICOBAR ISLANDS"
-
-global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-//global inf adm_per_1000 arg_per_1000 share_roads
-global con subdist_area num nearest_urban_proximity subdist_population
-global edu availability_of_primary_school availability_of_middle_school ///
-		   availability_of_high_school availability_of_ssc_school ///
-//		   availability_of_govt_degree_coll
-global med availability_of_phc_chc is_aanganwadi_centre_available is_veterinary_hospital_available 
-global qos st_ratio is_primary_school_with_electrici ///
-		   primary_school_toilet is_primary_school_with_computer_ ///
-		   is_primary_school_with_playgroun ///
-		   availability_of_mid_day_meal_sch is_primary_school_have_drinking_
+gen allotherschools = availability_of_middle_school + availability_of_high_school + ///
+						availability_of_ssc_school + availability_of_govt_degree_coll	   
 		   
 label var num "Number of Villages"
 label var availability_of_primary_school "Sum of Primary Schools"
@@ -62,6 +61,11 @@ label var farm "Share of Households in agriculture"
 label var share_roads "Share of Villages with Roads"
 label var subdist_med_sum "Sum of Medical Facilities"
 label var subdist_edu_sum "Sum of Educational Facilities"
+label var subdist_agro_sum "Sum of Agricultural Facilities"
+label var subdist_transportadmin_sum "Sum of Admin/Transport Facilities"
+label var availability_of_phc_chc "Sum of Primary Healthcare Centre"
+label var is_aanganwadi_centre_available "Sum of Aanganwadi Centre"
+label var is_veterinary_hospital_available "Sum of Veterinary Hospital"
 label var adm_per_1000 "Sum of Administrative/Transport Facilities"
 label var arg_per_1000 "Sum of Agricultural Facilities"
 label var phc_per_1000 "PHC per 1000 people"
@@ -70,36 +74,60 @@ label var veter_per_1000 "Veterinary Facilities per 1000 people"
 label var subdist_population "Subdistrict Population"
 label var subdist_area "Subdistrict Area"
 label var nearest_urban_proximity "Average Distance to Urban Centre"
+label var allotherschools "Sum of all other schools"
+label var st_ratio "Student Teacher Ratio"
+label var is_primary_school_with_electrici "Primary Schools with Electricity"
+label var primary_school_toilet "Primary Schools with Toilet"
+label var is_primary_school_with_computer_ "Primary Schools with Computer Lab"
+label var is_primary_school_with_playgroun "Primary Schools with Playground"
+label var availability_of_mid_day_meal_sch "Primary Schools with Midday meal"
+label var is_primary_school_have_drinking_ "Primary Schools with Drinking Water"
+label var ps_share_elec "Share of Primary Schools with Electricity"
+label var ps_share_toil "Share of Primary Schools with Toilet"
+label var ps_share_clab "Share of Primary Schools with Computer Lab"
+label var ps_share_play "Share of Primary Schools with Playground"
+label var ps_share_meal "Share of Primary Schools with Midday meal"
+label var ps_share_dwat "Share of Primary Schools with Drinking Water"
 
-keep if num >8
-keep if dist_ntl_pc <= 0.1
+//keep if state != "GOA"
+//keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
+global inf subdist_agro_sum subdist_transportadmin_sum share_roads
+//global inf adm_per_1000 arg_per_1000 share_roads
+global con subdist_area num nearest_urban_proximity subdist_population
+global edu availability_of_primary_school availability_of_middle_school ///
+		   availability_of_high_school availability_of_ssc_school ///
+//		   availability_of_govt_degree_coll
+global med availability_of_phc_chc is_aanganwadi_centre_available is_veterinary_hospital_available 
+global qos st_ratio is_primary_school_with_electrici ///
+		   primary_school_toilet is_primary_school_with_computer_ ///
+		   is_primary_school_with_playgroun ///
+		   availability_of_mid_day_meal_sch is_primary_school_have_drinking_
+//global qos st_ratio ps_elec ps_toil ps_clab ps_play ps_watr ps_meal		   
+global qs2 st_ratio ps_share_elec ps_share_toil ps_share_clab ///
+		   ps_share_play ps_share_dwat ps_share_meal	
 
 //reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
 reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
 //reg alesina subdist_med_sum primaryschool_per_100 $inf $con i.dist,robust
 	est store a5
-	estadd local fe Yes
 	estadd local sfe District
 	
 reg alesina subdist_med_sum subdist_edu_sum $inf ,robust
 	est store a1
-	estadd local fe No
 	estadd local sfe No
 
 reg alesina subdist_med_sum subdist_edu_sum $inf i.states,robust
+reg alesina subdist_med_sum subdist_edu_sum $inf i.dist,robust
 	est store a2
-	estadd local fe No
 	estadd local sfe State
 	
 reg alesina subdist_med_sum subdist_edu_sum $inf $con ,robust
 	est store a3
-	estadd local fe Yes
 	estadd local sfe No
 	
 reg alesina subdist_med_sum subdist_edu_sum $inf $con i.states,robust
 	est store a4
-	estadd local fe Yes
 	estadd local sfe State
 
 //reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
@@ -109,21 +137,18 @@ reg alesina subdist_med_sum subdist_edu_sum $inf $con i.states,robust
 	
 reg alesina subdist_med_sum $edu $inf $con  i.dist,robust
 	est store a6
-	estadd local fe Yes
 	estadd local sfe District	
 
-//keep if dist_ntl_pc <= 0.04
 reg alesina $med subdist_edu_sum $inf $con i.dist,robust
 	est store a7
-	estadd local fe Yes
 	estadd local sfe District
 	
-esttab a1 a2 a3 a4 a5 a6 a7 using "table_Gini_Stock_IN.tex", replace ///
+esttab a1 a2 a3 a4 a5 using "table_Gini_Stock_IN.tex", replace ///
 	keep(subdist_edu_sum subdist_med_sum ///
-			$inf $con $edu $med _cons) ///
+			$inf $con _cons) ///
 	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
-	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
-	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	label stats(r2 sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" " Region Fixed Effects" "Number of observations")) ///
 	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 		
 
@@ -138,40 +163,177 @@ predict pc1 pc2 pc3 pc4, score
 reg alesina pc1 i.dist, robust
 //reg alesina pc1 pc2 i.dist, robust	
 	
-****************
-**Region Level**
-****************
-/*
-reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist if region == "north",robust
+************************************************************
+********* QoS ******************************** QoS *********
+************************************************************	
+
+//reg alesina subdist_med_sum $qs2 allotherschools $inf $con  i.dist,robust
+reg alesina $qos allotherschools subdist_med_sum $inf $con  i.dist,robust
+	est store QoS
+	estadd local fe Yes
+	estadd local sfe District	
+reg alesina $qos allotherschools subdist_med_sum $inf $con  i.dist if zone == "north",robust
 	est store North
 	estadd local fe Yes
 	estadd local sfe District	
-reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist if region == "south",robust
+reg alesina $qos allotherschools subdist_med_sum $inf $con  i.dist if zone == "south",robust
 	est store South
 	estadd local fe Yes
 	estadd local sfe District
-reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist if region == "west",robust
+reg alesina $qos allotherschools subdist_med_sum $inf $con  i.dist if zone == "west",robust
 	est store West
 	estadd local fe Yes
 	estadd local sfe District
-reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist if region == "east",robust	
+reg alesina $qos allotherschools subdist_med_sum $inf $con  i.dist if zone == "east",robust
 	est store East
 	estadd local fe Yes
 	estadd local sfe District
-reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist if region == "central",robust	
+reg alesina $qos allotherschools subdist_med_sum $inf $con  i.dist if zone == "central",robust	
 	est store Central
 	estadd local fe Yes
 	estadd local sfe District
 	
-esttab North South West East Central using "table_Gini_Region.tex", replace ///
-	keep(subdist_edu_sum subdist_med_sum ///
+esttab QoS North South West East Central using "table_Gini_QoS.tex", replace ///
+	keep($qos allotherschools subdist_med_sum ///
 			$inf $con _cons) ///
 	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
 	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
 	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
 	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 		
-*/
+	
+****************
+****QoS State***
+****************	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "ANDHRA PRADESH",robust
+	est store ap3
+	estadd local fe Yes
+	estadd local sfe District	
+	
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "KARNATAKA",robust
+	est store ka3
+	estadd local fe Yes
+	estadd local sfe District
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "TELANGANA",robust
+	est store ts3
+	estadd local fe Yes
+	estadd local sfe District
+	
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "TAMIL NADU",robust
+	est store tn3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "KERALA",robust
+	est store kl3
+	estadd local fe Yes
+	estadd local sfe District
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "WESTBENGAL",robust
+	est store wb3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "CHHATTISGARH",robust
+	est store ch3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "ODISHA",robust
+	est store or3
+	estadd local fe Yes
+	estadd local sfe District	
+	
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "ASSAM",robust
+	est store as3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "TRIPURA",robust
+	est store tr3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "JHARKHAND",robust
+	est store jh3
+	estadd local fe Yes
+	estadd local sfe District		
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "BIHAR",robust
+	est store bh3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "UTTAR PRADESH",robust
+	est store up3
+	estadd local fe Yes
+	estadd local sfe District	
+	
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "UTTARAKHAND",robust
+	est store uk3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "PUNJABB",robust
+	est store pb3
+	estadd local fe Yes
+	estadd local sfe District	
+	
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "HARYANA",robust
+	est store hr3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "RAJASTHAN",robust
+	est store rj3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "MADHYA PRADESH",robust
+	est store mp3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "MAHARASHTRA",robust
+	est store mh3
+	estadd local fe Yes
+	estadd local sfe District	
+
+reg alesina $qos allotherschools subdist_med_sum $inf $con i.dist if state == "GUJARAT",robust
+	est store gj3
+	estadd local fe Yes
+	estadd local sfe District	
+
+esttab ap3 ka3 tn3 ts3 kl3 mh3 mp3 using "test_qos_1.tex", replace ///
+	keep($qos allotherschools subdist_med_sum ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 	
+	
+esttab or3 ch3 wb3 as3 tr3 bh3 jh3 using "test_qos_2.tex", replace ///
+	keep($qos allotherschools subdist_med_sum ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 	
+
+esttab gj3 rj3 pb3 hr3 uk3 up3 using "test_qos_3.tex", replace ///
+	keep($qos allotherschools subdist_med_sum ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 	
+			
+
 ************************************************************
 **Zonal Level***************************Zonal Level*********
 ************************************************************
@@ -378,8 +540,7 @@ reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist if state == "CHHATT
 	est store ch3
 	estadd local fe Yes
 	estadd local sfe District	
-	
-	
+
 reg alesina subdist_med_sum $edu $inf $con i.dist if state == "ODISHA",robust
 	est store or1
 	estadd local fe Yes
@@ -714,6 +875,17 @@ label var nearest_urban_proximity "Average Distance to Urban Centre"
 
 
 reg wcv subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
+	est store wcv
+	estadd local sfe District	
+
+esttab wcv using "wcv.tex", replace ///
+	keep(subdist_edu_sum subdist_med_sum ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Region Fixed Effects" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
 
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
@@ -782,6 +954,17 @@ label var nearest_urban_proximity "Average Distance to Urban Centre"
 
 //keep if theil < 
 reg theil subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
+	est store wcv
+	estadd local sfe District	
+
+esttab wcv using "theil.tex", replace ///
+	keep(subdist_edu_sum subdist_med_sum ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Region Fixed Effects" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
 
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
