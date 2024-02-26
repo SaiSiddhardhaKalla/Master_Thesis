@@ -37,13 +37,13 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
 global inf adm_per_1000 arg_per_1000 share_roads
 global con subdist_area num nearest_urban_proximity
-global edu primaryschool_per_100 midschool_per_1000 ///
+global edu pschool_per_1000 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
 //global edu availability_of_primary_school availability_of_middle_school ///
 //		   availability_of_high_school availability_of_ssc_school ///
 //		   availability_of_govt_degree_coll
 //global med availability_of_phc_chc is_aanganwadi_centre_available is_veterinary_hospital_available 
-global med phc_per_1000 aanganwadi_per_100_reg veter_per_1000
+global med phc_per_1000 aanganwadi_per_100 veter_per_1000
 global qos st_ratio is_primary_school_with_electrici ///
 		   primary_school_toilet is_primary_school_with_computer_ ///
 		   is_primary_school_with_playgroun ///
