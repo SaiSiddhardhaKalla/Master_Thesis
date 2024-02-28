@@ -17,6 +17,8 @@ clear all
 import delimited "2020catdata_uncensored.csv", clear
 //import delimited "2020catdata.csv", clear
 
+set matsize 6000
+
 keep if alesina >0
 encode state, gen (states)
 encode district, gen (dist)
@@ -35,7 +37,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf adm_per_1000 arg_per_1000 share_roads
+global inf arg_per_1000 share_roads share_rails share_pubtn //adm_per_1000 
 global con subdist_area num nearest_urban_proximity
 global edu pschool_per_1000 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
@@ -675,7 +677,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf adm_per_1000 arg_per_1000 share_roads
+global inf arg_per_1000 share_roads share_rails share_pubtn //adm_per_1000
 global con subdist_area num nearest_urban_proximity
 global edu primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
@@ -738,7 +740,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf adm_per_1000 arg_per_1000 share_roads
+global inf arg_per_1000 share_roads share_rails share_pubtn //adm_per_1000
 global con subdist_area num nearest_urban_proximity
 global edu primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 

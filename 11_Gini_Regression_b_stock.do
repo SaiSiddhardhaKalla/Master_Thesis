@@ -92,7 +92,7 @@ label var ps_share_dwat "Share of Primary Schools with Drinking Water"
 //keep if state != "GOA"
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
-global inf subdist_agro_sum subdist_transportadmin_sum share_roads
+global inf subdist_agro_sum share_roads share_rails share_pubtn //subdist_transportadmin_sum
 //global inf adm_per_1000 arg_per_1000 share_roads
 global con subdist_area num nearest_urban_proximity subdist_population
 global edu availability_of_primary_school availability_of_middle_school ///
