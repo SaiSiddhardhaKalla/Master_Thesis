@@ -33,11 +33,11 @@ gen highschool_per_1000 = availability_of_high_school/no_1000s
 gen sscschool_per_1000 = availability_of_ssc_school/no_1000s
 gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 
-//keep if state != "GOA"
+//keep if state != "KERALA"
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf arg_per_1000 share_roads share_rails share_pubtn //adm_per_1000 
+global inf arg_per_1000 adm_per_1000 share_roads share_rails share_pubtn //adm_per_1000 
 global con subdist_area num nearest_urban_proximity
 global edu pschool_per_1000 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
@@ -60,6 +60,8 @@ label var degreecol_per_1000 "Degree Colleges per 1000 people"
 label var availability_of_govt_degree_coll "Govt. Degree Colleges per 1000 people"
 label var farm "Share of Households in agriculture"
 label var share_roads "Share of Villages with Roads"
+label var share_rails "Share of Villages with Railway"
+label var share_pubtn "Share of Villages with Public Transport"
 label var med_per_1000 "Medical Facilities per 1000 people"
 label var edu_per_1000 "Educational Facilities per 1000 people"
 label var adm_per_1000 "Administrative/Transport Facilities per 1000 people"
@@ -112,7 +114,6 @@ reg alesina med_per_1000 $edu $inf $con  i.dist,robust
 	estadd local fe Yes
 	estadd local sfe District	
 
-//keep if dist_ntl_pc <= 0.04
 reg alesina $med edu_per_1000 $inf $con i.dist,robust
 	est store a7
 	estadd local fe Yes
@@ -131,8 +132,8 @@ esttab a1 a2 a3 a4 a5 a6 a7 using "table_Gini_IN.tex", replace ///
 **Multicollinearity**
 *********************	
 	
-corr med_per_1000 edu_per_1000 adm_per_1000 arg_per_1000
-pca med_per_1000 edu_per_1000 adm_per_1000 arg_per_1000
+corr med_per_1000 edu_per_1000 adm_per_1000 arg_per_1000 share_roads share_rails share_pubtn
+pca med_per_1000 edu_per_1000 adm_per_1000 arg_per_1000 share_roads share_rails share_pubtn
 estat kmo
 predict pc1 pc2 pc3 pc4, score
 reg alesina pc1 i.dist, robust
@@ -649,6 +650,15 @@ esttab gj3 gj1 gj2 rj3 rj1 rj2 a5 using "test_10.tex", replace ///
 	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 	
 	
+esttab gj3 mh3 ts3 tn3 kl3 ka3 ap3 rj3 pb3 hr3 wb3 tr3 or3 jh3 bh3 as3 up3 uk3 mp3 ch3 a5 using "all_in_whole.tex", replace ///
+	keep(edu_per_1000 med_per_1000 ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 		
+	
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
 
@@ -677,7 +687,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf arg_per_1000 share_roads share_rails share_pubtn //adm_per_1000
+global inf arg_per_1000 adm_per_1000 share_roads share_rails share_pubtn //
 global con subdist_area num nearest_urban_proximity
 global edu primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
@@ -699,6 +709,8 @@ label var sscschool_per_1000 "SSC Schools per 1000 people"
 label var availability_of_govt_degree_coll "Govt. Degree Colleges per 1000 people"
 label var farm "Share of Households in agriculture"
 label var share_roads "Share of Villages with Roads"
+label var share_rails "Share of Villages with Railway"
+label var share_pubtn "Share of Villages with Public Transport"
 label var med_per_1000 "Medical Facilities per 1000 people"
 label var edu_per_1000 "Educational Facilities per 1000 people"
 label var adm_per_1000 "Administrative/Transport Facilities per 1000 people"
@@ -740,7 +752,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf arg_per_1000 share_roads share_rails share_pubtn //adm_per_1000
+global inf arg_per_1000 adm_per_1000 share_roads share_rails share_pubtn //
 global con subdist_area num nearest_urban_proximity
 global edu primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
@@ -762,6 +774,8 @@ label var sscschool_per_1000 "SSC Schools per 1000 people"
 label var availability_of_govt_degree_coll "Govt. Degree Colleges per 1000 people"
 label var farm "Share of Households in agriculture"
 label var share_roads "Share of Villages with Roads"
+label var share_rails "Share of Villages with Railway"
+label var share_pubtn "Share of Villages with Public Transport"
 label var med_per_1000 "Medical Facilities per 1000 people"
 label var edu_per_1000 "Educational Facilities per 1000 people"
 label var adm_per_1000 "Administrative/Transport Facilities per 1000 people"
