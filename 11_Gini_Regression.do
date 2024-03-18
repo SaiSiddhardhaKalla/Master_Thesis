@@ -14,7 +14,8 @@ log using "011_Reg.log", replace
 *********************************************************************************************************************************************************
 cls
 clear all
-import delimited "2020catdata_uncensored.csv", clear
+//import delimited "2020catdata_uncensored.csv", clear // This is th eold file
+import delimited "2020catdata_old.csv", clear
 //import delimited "2020catdata.csv", clear
 
 set matsize 6000
@@ -32,20 +33,25 @@ gen midschool_per_1000 = availability_of_middle_school/no_1000s
 gen highschool_per_1000 = availability_of_high_school/no_1000s
 gen sscschool_per_1000 = availability_of_ssc_school/no_1000s
 gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
+gen allotherschools = availability_of_middle_school + availability_of_high_school + ///
+						availability_of_ssc_school + availability_of_govt_degree_coll	
+gen school_per_1000 = allotherschools/no_1000s
+gen aanganwadi_per_1000 = is_aanganwadi_centre_available/no_1000s
+gen jan_per_1000 = availability_of_jan_aushadhi_ken/no_1000s
 
 //keep if state != "KERALA"
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
-global inf arg_per_1000 adm_per_1000 share_roads share_rails share_pubtn //adm_per_1000 
-global con subdist_area num nearest_urban_proximity
+global inf share_roads share_rails share_pubtn arg_per_1000 adm_per_1000  
+global con area num nearest_urban_proximity
 global edu pschool_per_1000 midschool_per_1000 ///
-			highschool_per_1000 sscschool_per_1000 
+			highschool_per_1000 sscschool_per_1000 // degreecol_per_1000
 //global edu availability_of_primary_school availability_of_middle_school ///
 //		   availability_of_high_school availability_of_ssc_school ///
 //		   availability_of_govt_degree_coll
 //global med availability_of_phc_chc is_aanganwadi_centre_available is_veterinary_hospital_available 
-global med phc_per_1000 aanganwadi_per_100 veter_per_1000
+global med phc_per_1000 aanganwadi_per_100 veter_per_1000 jan_per_1000
 global qos st_ratio is_primary_school_with_electrici ///
 		   primary_school_toilet is_primary_school_with_computer_ ///
 		   is_primary_school_with_playgroun ///
@@ -70,12 +76,13 @@ label var phc_per_1000 "PHC per 1000 people"
 label var aanganwadi_per_100_reg "Aanganwadi Centre per 100 children"
 label var veter_per_1000 "Veterinary Facilities per 1000 people"
 label var subdist_population "Subdistrict Population"
-label var subdist_area "Subdistrict Area"
+label var area "Subdistrict Area"
 label var nearest_urban_proximity "Average Distance to Urban Centre"
 
 keep if num >8
-keep if dist_ntl_pc <= 0.1
+//keep if dist_ntl_pc <= 0.1
 
+//reg alesina $qos school_per_1000 med_per_1000 $inf $con  i.dist,robust
 
 //reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
 reg alesina med_per_1000 edu_per_1000 $inf $con i.dist,robust
@@ -119,13 +126,13 @@ reg alesina $med edu_per_1000 $inf $con i.dist,robust
 	estadd local fe Yes
 	estadd local sfe District
 	
-esttab a1 a2 a3 a4 a5 a6 a7 using "table_Gini_IN.tex", replace ///
+esttab a1 a2 a3 a4 a5  using "table_Gini_IN.tex", replace /// a6 a7
 	keep(edu_per_1000 med_per_1000 ///
-			$inf $con $edu $med _cons) ///
+			$inf $con  _cons) /// $edu $med
 	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
-	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	label stats(r2 fe sfe N, fmt(%9.3f %9.0f %9.0fc) ///
 	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
-	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 		
 
 *********************
@@ -354,15 +361,15 @@ reg alesina $med edu_per_1000 $inf $con i.dist if state == "GOA",robust
 	estadd local fe Yes
 	estadd local sfe District	
 */	
-reg alesina med_per_1000 $edu $inf $con i.dist if state == "WESTBENGAL",robust
+reg alesina med_per_1000 $edu $inf $con i.dist if state == "WEST BENGAL",robust
 	est store wb1
 	estadd local fe Yes
 	estadd local sfe District	
-reg alesina $med edu_per_1000 $inf $con i.dist if state == "WESTBENGAL",robust
+reg alesina $med edu_per_1000 $inf $con i.dist if state == "WEST BENGAL",robust
 	est store wb2
 	estadd local fe Yes
 	estadd local sfe District
-reg alesina med_per_1000 edu_per_1000 $inf $con i.dist if state == "WESTBENGAL",robust
+reg alesina med_per_1000 edu_per_1000 $inf $con i.dist if state == "WEST BENGAL",robust
 	est store wb3
 	estadd local fe Yes
 	estadd local sfe District	
@@ -482,15 +489,15 @@ reg alesina med_per_1000 edu_per_1000 $inf $con i.dist if state == "UTTARAKHAND"
 	estadd local fe Yes
 	estadd local sfe District	
 	
-reg alesina med_per_1000 $edu $inf $con i.dist if state == "PUNJABB",robust
+reg alesina med_per_1000 $edu $inf $con i.dist if state == "PUNJAB",robust
 	est store pb1
 	estadd local fe Yes
 	estadd local sfe District	
-reg alesina $med edu_per_1000 $inf $con i.dist if state == "PUNJABB",robust
+reg alesina $med edu_per_1000 $inf $con i.dist if state == "PUNJAB",robust
 	est store pb2
 	estadd local fe Yes
 	estadd local sfe District
-reg alesina med_per_1000 edu_per_1000 $inf $con i.dist if state == "PUNJABB",robust
+reg alesina med_per_1000 edu_per_1000 $inf $con i.dist if state == "PUNJAB",robust
 	est store pb3
 	estadd local fe Yes
 	estadd local sfe District	
@@ -650,14 +657,32 @@ esttab gj3 gj1 gj2 rj3 rj1 rj2 a5 using "test_10.tex", replace ///
 	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 	
 	
-esttab gj3 mh3 ts3 tn3 kl3 ka3 ap3 rj3 pb3 hr3 wb3 tr3 or3 jh3 bh3 as3 up3 uk3 mp3 ch3 a5 using "all_in_whole.tex", replace ///
+esttab gj3 mh3 ts3 tn3 kl3 ka3 ap3 rj3 pb3 hr3 wb3 tr3 or3 jh3 bh3 as3 up3 uk3 mp3 ch3 using "all_in_whole.tex", replace ///
 	keep(edu_per_1000 med_per_1000 ///
 			$inf $con _cons) ///
 	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
-	label stats(r2 fe sfe N, fmt(%9.6f %9.0f %9.0fc) ///
+	label stats(r2 fe sfe N, fmt(%9.3f %9.0f %9.0fc) ///
 	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
-	plain b(%9.6f) se(%9.6f) se nonumbers lines parentheses fragment ///
+	plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
 	varlabels(_cons Constant) 		
+
+esttab gj1 mh1 ts1 tn1 kl1 ka1 ap1 rj1 pb1 hr1 wb1 tr1 or1 jh1 bh1 as1 up1 uk1 mp1 ch1 using "edu_in_whole.tex", replace ///
+	keep($edu med_per_1000 ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.3f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 	
+	
+esttab gj2 mh2 ts2 tn2 kl2 ka2 ap2 rj2 pb2 hr2 wb2 tr2 or2 jh2 bh2 as2 up2 uk2 mp2 ch2 using "med_in_whole.tex", replace ///
+	keep(edu_per_1000 $med ///
+			$inf $con _cons) ///
+	star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+	label stats(r2 fe sfe N, fmt(%9.3f %9.0f %9.0fc) ///
+	labels("R-squared" "Fixed Effects" "State FEs" "Number of observations")) ///
+	plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
+	varlabels(_cons Constant) 
 	
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
@@ -669,7 +694,7 @@ import delimited "2020cat_w_data.csv", clear
 
 keep if wcv >0
 keep if num >8
-keep if dist_ntl_pc <= 0.1
+//keep if dist_ntl_pc <= 0.1
 encode state, gen (states)
 encode district, gen (dist)
 gen farm = total_hhd_engaged_in_farm_activi/total_hhd
@@ -688,7 +713,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
 global inf arg_per_1000 adm_per_1000 share_roads share_rails share_pubtn //
-global con subdist_area num nearest_urban_proximity
+global con area num nearest_urban_proximity
 global edu primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
 //global edu availability_of_primary_school availability_of_middle_school ///
@@ -719,7 +744,7 @@ label var phc_per_1000 "PHC per 1000 people"
 label var aanganwadi_per_100_reg "Aanganwadi Centre per 100 children"
 label var veter_per_1000 "Veterinary Facilities per 1000 people"
 label var subdist_population "Subdistrict Population"
-label var subdist_area "Subdistrict Area"
+label var area "Subdistrict Area"
 label var nearest_urban_proximity "Average Distance to Urban Centre"
 
 reg wcv med_per_1000 edu_per_1000 $inf $con i.dist,robust
@@ -734,7 +759,7 @@ import delimited "2020cat_t_data.csv", clear
 
 keep if theil >0
 keep if num >8
-keep if dist_ntl_pc <= 0.1
+//keep if dist_ntl_pc <= 0.1
 encode state, gen (states)
 encode district, gen (dist)
 gen farm = total_hhd_engaged_in_farm_activi/total_hhd
@@ -753,7 +778,7 @@ gen degreecol_per_1000 = availability_of_govt_degree_coll/no_1000s
 
 //global inf subdist_agro_sum subdist_transportadmin_sum share_roads
 global inf arg_per_1000 adm_per_1000 share_roads share_rails share_pubtn //
-global con subdist_area num nearest_urban_proximity
+global con area num nearest_urban_proximity
 global edu primaryschool_per_100 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 
 //global edu availability_of_primary_school availability_of_middle_school ///
@@ -784,7 +809,7 @@ label var phc_per_1000 "PHC per 1000 people"
 label var aanganwadi_per_100_reg "Aanganwadi Centre per 100 children"
 label var veter_per_1000 "Veterinary Facilities per 1000 people"
 label var subdist_population "Subdistrict Population"
-label var subdist_area "Subdistrict Area"
+label var area "Subdistrict Area"
 label var nearest_urban_proximity "Average Distance to Urban Centre"
 
 //keep if theil < 
