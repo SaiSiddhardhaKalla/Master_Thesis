@@ -14,9 +14,11 @@ log using "011_Reg.log", replace
 *********************************************************************************************************************************************************
 cls
 clear all
-//import delimited "2020catdata_uncensored.csv", clear // This is th eold file
+//import delimited "2020catdata_uncensored.csv", clear // This is the old file
 import delimited "2020catdata_old.csv", clear
-//import delimited "2020catdata.csv", clear
+//import delimited "2020catdata_villages.csv", clear // File for only villages
+//import delimited "2020catdata_towns.csv", clear // File for only villages
+//import delimited "gini_pc.csv", clear
 
 set matsize 6000
 
@@ -42,16 +44,13 @@ gen jan_per_1000 = availability_of_jan_aushadhi_ken/no_1000s
 //keep if state != "KERALA"
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
-//global inf subdist_agro_sum subdist_transportadmin_sum share_roads
+
 global inf share_roads share_rails share_pubtn arg_per_1000 adm_per_1000  
-global con area num nearest_urban_proximity
+global con num nearest_urban_proximity //area
 global edu pschool_per_1000 midschool_per_1000 ///
-			highschool_per_1000 sscschool_per_1000 // degreecol_per_1000
-//global edu availability_of_primary_school availability_of_middle_school ///
-//		   availability_of_high_school availability_of_ssc_school ///
-//		   availability_of_govt_degree_coll
-//global med availability_of_phc_chc is_aanganwadi_centre_available is_veterinary_hospital_available 
-global med phc_per_1000 aanganwadi_per_100 veter_per_1000 jan_per_1000
+			highschool_per_1000 sscschool_per_1000 degreecol_per_1000
+global med phc_per_1000 aanganwadi_per_100 veter_per_1000 ///
+			jan_per_1000 mchc_per_1000
 global qos st_ratio is_primary_school_with_electrici ///
 		   primary_school_toilet is_primary_school_with_computer_ ///
 		   is_primary_school_with_playgroun ///
@@ -79,12 +78,11 @@ label var subdist_population "Subdistrict Population"
 label var area "Subdistrict Area"
 label var nearest_urban_proximity "Average Distance to Urban Centre"
 
-keep if num >8
+keep if num >2
 //keep if dist_ntl_pc <= 0.1
 
 //reg alesina $qos school_per_1000 med_per_1000 $inf $con  i.dist,robust
 
-//reg alesina subdist_med_sum subdist_edu_sum $inf $con i.dist,robust
 reg alesina med_per_1000 edu_per_1000 $inf $con i.dist,robust
 //reg alesina med_per_1000 primaryschool_per_100 $inf $con i.dist,robust
 	est store a5
@@ -693,7 +691,7 @@ import delimited "2020cat_w_data.csv", clear
 
 
 keep if wcv >0
-keep if num >8
+keep if num >2
 //keep if dist_ntl_pc <= 0.1
 encode state, gen (states)
 encode district, gen (dist)
@@ -758,7 +756,7 @@ import delimited "2020cat_t_data.csv", clear
 
 
 keep if theil >0
-keep if num >8
+keep if num >2
 //keep if dist_ntl_pc <= 0.1
 encode state, gen (states)
 encode district, gen (dist)

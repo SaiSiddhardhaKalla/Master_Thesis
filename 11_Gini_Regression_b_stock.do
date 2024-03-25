@@ -14,14 +14,14 @@ log using "011_Reg.log", replace
 *********************************************************************************************************************************************************
 cls
 clear all
-import delimited "2020catdata_uncensored.csv", clear
-//import delimited "2020catdata.csv", clear
+//import delimited "2020catdata_uncensored.csv", clear // This is old data
+import delimited "2020catdata_old.csv", clear
 
 set matsize 6000
 
 keep if alesina >0
 keep if num >8
-keep if dist_ntl_pc <= 0.1
+//keep if dist_ntl_pc <= 0.1
 encode state, gen (states)
 encode district, gen (dist)
 gen farm = total_hhd_engaged_in_farm_activi/total_hhd
@@ -72,7 +72,7 @@ label var phc_per_1000 "PHC per 1000 people"
 label var aanganwadi_per_100_reg "Aanganwadi Centre per 100 children"
 label var veter_per_1000 "Veterinary Facilities per 1000 people"
 label var subdist_population "Subdistrict Population"
-label var subdist_area "Subdistrict Area"
+label var area "Subdistrict Area"
 label var nearest_urban_proximity "Average Distance to Urban Centre"
 label var allotherschools "Sum of all other schools"
 label var st_ratio "Student Teacher Ratio"
@@ -92,18 +92,17 @@ label var ps_share_dwat "Share of Primary Schools with Drinking Water"
 //keep if state != "GOA"
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
-global inf subdist_agro_sum share_roads share_rails share_pubtn //subdist_transportadmin_sum
-//global inf adm_per_1000 arg_per_1000 share_roads
-global con subdist_area num nearest_urban_proximity subdist_population
+global inf subdist_agro_sum share_roads share_rails share_pubtn subdist_transportadmin_sum
+global con area num nearest_urban_proximity subdist_population
 global edu availability_of_primary_school availability_of_middle_school ///
 		   availability_of_high_school availability_of_ssc_school ///
-//		   availability_of_govt_degree_coll
+		   availability_of_govt_degree_coll
 global med availability_of_phc_chc is_aanganwadi_centre_available is_veterinary_hospital_available 
 global qos st_ratio is_primary_school_with_electrici ///
 		   primary_school_toilet is_primary_school_with_computer_ ///
 		   is_primary_school_with_playgroun ///
 		   availability_of_mid_day_meal_sch is_primary_school_have_drinking_
-//global qos st_ratio ps_elec ps_toil ps_clab ps_play ps_watr ps_meal		   
+		   
 global qs2 st_ratio ps_share_elec ps_share_toil ps_share_clab ///
 		   ps_share_play ps_share_dwat ps_share_meal	
 
