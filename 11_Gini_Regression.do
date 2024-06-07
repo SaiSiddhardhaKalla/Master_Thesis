@@ -16,8 +16,8 @@ cls
 clear all
 //import delimited "2020catdata_uncensored.csv", clear // This is the old file
 //import delimited "2020catdata_main.csv", clear // This is secondary file
-import delimited "2020catdata_old.csv", clear // This is main file
-//import delimited "2017catdata_old.csv", clear // This is main file
+//import delimited "2020catdata_old.csv", clear // This is main file
+import delimited "2020MA_Final.csv", clear // This is main file
 //import delimited "2020catdata_villages.csv", clear // File for only villages
 //import delimited "2020catdata_towns.csv", clear // File for only towns
 //import delimited "gini_pc.csv", clear

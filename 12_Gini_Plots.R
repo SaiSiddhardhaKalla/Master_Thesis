@@ -39,11 +39,11 @@ ggplot() +
 
 
 # Select only the necessary columns and filter the first data frame
-filtered_df1 <- df1[df1$num > 2 & df1$alesina > 0 & df1$subdist_ntl_pc <= 0.2, c("subdist_ntl_pc", "alesina")]
+filtered_df1 <- df1[df1$num > 2 & df1$alesina > 0 & df1$subdist_ntl_pc <= 2, c("subdist_ntl_pc", "alesina")]
 filtered_df1$year <- "2017"  # Add a column for the year
 
 # Select only the necessary columns and filter the second data frame
-filtered_df2 <- df2[df2$num > 2 & df2$alesina > 0 & df2$subdist_ntl_pc <= 0.2, c("subdist_ntl_pc", "alesina")]
+filtered_df2 <- df2[df2$num > 2 & df2$alesina > 0 & df2$subdist_ntl_pc <= 2, c("subdist_ntl_pc", "alesina")]
 filtered_df2$year <- "2020"  # Add a column for the year
 
 # Combine the two data frames
