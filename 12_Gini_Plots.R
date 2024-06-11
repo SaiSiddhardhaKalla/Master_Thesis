@@ -1,7 +1,9 @@
 library(ggplot2)
+library(dplyr)
 
-df1 <- read.csv('/Users/sid/Desktop/2017gini.csv')
-df2 <- read.csv('/Users/sid/Desktop/2020gini.csv')
+df1 <- read.csv('/Users/sid/Library/CloudStorage/OneDrive-DeakinUniversity/UDocs - D/DataSets/ma2020/gini2017.csv')
+df2 <- read.csv('/Users/sid/Library/CloudStorage/OneDrive-DeakinUniversity/UDocs - D/DataSets/ma2020/gini2020.csv')
+#df2 <- df2 %>% filter(Subdistrict != "Desri")
 
 ####################################################################
 # Filter the data
@@ -39,11 +41,11 @@ ggplot() +
 
 
 # Select only the necessary columns and filter the first data frame
-filtered_df1 <- df1[df1$num > 2 & df1$alesina > 0 & df1$subdist_ntl_pc <= 2, c("subdist_ntl_pc", "alesina")]
+filtered_df1 <- df1[df1$num > 2 & df1$alesina > 0 & df1$subdist_ntl_pc <= 0.2, c("subdist_ntl_pc", "alesina")]
 filtered_df1$year <- "2017"  # Add a column for the year
 
 # Select only the necessary columns and filter the second data frame
-filtered_df2 <- df2[df2$num > 2 & df2$alesina > 0 & df2$subdist_ntl_pc <= 2, c("subdist_ntl_pc", "alesina")]
+filtered_df2 <- df2[df2$num > 2 & df2$alesina > 0 & df2$subdist_ntl_pc <= 0.2, c("subdist_ntl_pc", "alesina")]
 filtered_df2$year <- "2020"  # Add a column for the year
 
 # Combine the two data frames
@@ -59,5 +61,13 @@ ggplot(combined_df, aes(x = subdist_ntl_pc, y = alesina, color = year)) +
   scale_color_manual(values = c("2017" = "blue", "2020" = "red")) +  # Set custom colors
   theme_classic() + # Use a minimal theme
   theme(legend.position = "bottom") 
+
+####################################################################
+df3 <- merge(df1, df2, by = c("State", "District", "Subdistrict"), all = TRUE)
+
+df3 <- df3 %>%
+  mutate(Change = (alesina.y - alesina.x) / alesina.x)
+write.csv(df3, "/Users/sid/Desktop/df3_output.csv", row.names = TRUE)
+
 
 

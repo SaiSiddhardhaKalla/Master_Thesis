@@ -16,8 +16,9 @@ cls
 clear all
 //import delimited "2020catdata_uncensored.csv", clear // This is the old file
 //import delimited "2020catdata_main.csv", clear // This is secondary file
-//import delimited "2020catdata_old.csv", clear // This is main file
+//import delimited "2020catdata_old.csv", clear // This is main file 2
 import delimited "2020MA_Final.csv", clear // This is main file
+//import delimited "2017MA_Final.csv", clear // This is main file
 //import delimited "2020catdata_villages.csv", clear // File for only villages
 //import delimited "2020catdata_towns.csv", clear // File for only towns
 //import delimited "gini_pc.csv", clear
@@ -47,8 +48,8 @@ gen jan_per_1000 = availability_of_jan_aushadhi_ken/no_1000s
 //keep if state != "ANDAMAN AND NICOBAR ISLANDS"
 
 
-global inf share_roads share_rails share_pubtn arg_per_1000 adm_per_1000  
-global con num nearest_urban_proximity area
+global inf share_roads  share_pubtn  adm_per_1000 share_rails arg_per_1000
+global con num area nearest_urban_proximity
 global edu pschool_per_1000 midschool_per_1000 ///
 			highschool_per_1000 sscschool_per_1000 degreecol_per_1000
 global med phc_per_1000 aanganwadi_per_100 veter_per_1000 ///
