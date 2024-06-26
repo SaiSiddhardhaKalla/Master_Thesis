@@ -17,7 +17,9 @@ log using "011_Panel.log", replace
 import delimited "Panel_Raw.csv", clear // This is main file
 //import delimited "Panel_Clean.csv", clear // 
 //import delimited "Panel_Raw_change.csv", clear //
-//import delimited "Panel_Clean_change.csv", clear // 
+//import delimited "Panel_Clean_change.csv", clear //
+//import delimited "towns.csv", clear //
+//import delimited "villages.csv", clear // 
 
 
 set matsize 8000
