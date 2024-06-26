@@ -26,14 +26,36 @@ label var num "Number of Villages"
 label var share_roads "Share of Villages with Roads"
 label var share_rails "Share of Villages with Railway"
 label var share_pubtn "Share of Villages with Public Transport"
+label var population "Population"
+label var med "Medical Facilities"
+label var edu "Educational Facilities"
+label var adm "Administrative Facilities"
 label var med_per_1000 "Medical Facilities per 1000 people"
 label var edu_per_1000 "Educational Facilities per 1000 people"
-label var adm_per_1000 "Administrative/Transport Facilities per 1000 people"
+label var adm_per_1000 "Administrative Facilities per 1000 people"
 label var subdistrictarea "Subdistrict Area"
 label var nearest_town_distance "Average Distance to Urban Centre"
+label var phc "Primary Healthcare Centre"
+label var mcwc "Maternal and Child Welfare Centre"
+label var veterinary_hospital "Veterinary Hospital"
+label var aanganwadi "Aanganwadi"
+label var phc_per_1000 "Primary Healthcare Centre per 1000 people"
+label var mcwc_per_1000 "Maternal and Child Welfare Centre per 1000 people"
+label var vet_per_1000 "Veterinary Hospital per 1000 people"
+label var aanganwadi_per_1000 "Aanganwadi per 1000 people"
+label var p_school "Primary School"
+label var m_school "Middle School"
+label var h_school "High School"
+label var ssc_school "Senior Secondary School"
+label var iti "Vocational Institute"
+label var p_sch_per_1000 "Primary School per 1000 people"
+label var m_sch_per_1000 "Middle School per 1000 people"
+label var h_sch_per_1000 "High School per 1000 people"
+label var ssc_sch_per_1000 "Senior Secondary School per 1000 people"      
+label var iti_per_1000 "Vocational Institute per 1000 people"      
 
-
-
+		 
+	
 keep if alesina >0
 bysort unique_id: gen count = _N
 * Drop values that occur only once
@@ -287,7 +309,69 @@ esttab t4 t5 t6 using "test_panel_2.tex", replace /// a6 a7
     plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
     varlabels(_cons Constant)
 
+*****************************************************************
+*****************************************************************	
 
+xtreg alesina $med edu adm $inf population $con i.year, fe
+	est store t2
+	estadd local fe Yes
+xtreg alesina $med edu adm $inf population $con i.year if inlist(zone, "South", "West"), fe //vce(cluster subdist)
+	est store m1
+	estadd local fe Yes
+xtreg alesina $med edu adm $inf population $con i.year if inlist(zone, "Central", "East", "North"), fe //vce(cluster subdist)
+	est store m2
+	estadd local fe Yes	
+	
+xtreg alesina med $edu adm $inf population $con i.year, fe
+	est store t3
+	estadd local fe Yes	
+xtreg alesina med $edu adm $inf population $con i.year if inlist(zone, "South", "West"), fe //vce(cluster subdist)
+	est store e1
+	estadd local fe Yes
+xtreg alesina med $edu adm $inf population $con i.year if inlist(zone, "Central", "East", "North"), fe //vce(cluster subdist)
+	est store e2
+	estadd local fe Yes	
+	
+esttab t2 m1 m2 t3 e1 e2 using "state_stock.tex", replace /// a6 a7
+    keep(edu med adm $edu $med ///
+        $inf population $con _cons) ///
+    star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+    label stats(r2 fe N, fmt(%9.3f %9.0f %9.0fc) ///
+    labels("R-squared" "Fixed Effects" "Number of observations")) ///
+    plain b(%9.3e) se(%9.3e) se nonumbers lines parentheses fragment ///
+    varlabels(_cons Constant)
+	
+xtreg alesina $med_access edu_per_1000 adm_per_1000 $inf $con i.year, fe
+	est store t5
+	estadd local fe Yes
+xtreg alesina $med_access edu_per_1000 adm_per_1000 $inf $con i.year if inlist(zone, "South", "West"), fe //vce(cluster subdist)
+	est store ma1
+	estadd local fe Yes
+xtreg alesina $med_access edu_per_1000 adm_per_1000 $inf $con i.year if inlist(zone, "Central", "East", "North"), fe //vce(cluster subdist)
+	est store ma2
+	estadd local fe Yes
+	
+xtreg alesina med_per_1000 $edu_access adm_per_1000 $inf $con i.year, fe
+	est store t6
+	estadd local fe Yes	
+xtreg alesina med_per_1000 $edu_access adm_per_1000 $inf $con i.year if inlist(zone, "South", "West"), fe //vce(cluster subdist)
+	est store ea1
+	estadd local fe Yes
+xtreg alesina med_per_1000 $edu_access adm_per_1000 $inf $con i.year if inlist(zone, "Central", "East", "North"), fe //vce(cluster subdist)
+	est store ea2
+	estadd local fe Yes
+	
+	
+esttab t5 ma1 ma2 t6 ea1 ea2 using "state_Access.tex", replace /// a6 a7
+    keep(edu_per_1000 med_per_1000 adm_per_1000 ///
+		$med_access $edu_access ///
+        $inf $con _cons) ///
+    star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
+    label stats(r2 fe N, fmt(%9.3f %9.0f %9.0fc) ///
+    labels("R-squared" "Fixed Effects" "Number of observations")) ///
+    plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
+    varlabels(_cons Constant)	
+	
 /*
 cls
 clear all
