@@ -13,7 +13,7 @@ log using "011_Panel.log", replace
 *********************************************************************************************************************************************************
 
 
-//import delimited "Panel.csv", clear // 
+//import delimited "Panel_Area.csv", clear // 
 import delimited "Panel_Raw.csv", clear // This is main file
 //import delimited "Panel_Clean.csv", clear // 
 //import delimited "Panel_Raw_change.csv", clear //
@@ -54,17 +54,19 @@ label var p_sch_per_1000 "Primary School per 1000 people"
 label var m_sch_per_1000 "Middle School per 1000 people"
 label var h_sch_per_1000 "High School per 1000 people"
 label var ssc_sch_per_1000 "Senior Secondary School per 1000 people"      
-label var iti_per_1000 "Vocational Institute per 1000 people"      
+label var iti_per_1000 "Vocational Institute per 1000 people" 
+label var sc_pop_share "Share of SC Population"
+label var st_pop_share "Share of ST Population"
+     
 
 		 
-	
 keep if alesina >0
 bysort unique_id: gen count = _N
 * Drop values that occur only once
 drop if count == 1
 * Drop the count variable as it's no longer needed
 drop count
-
+//drop zone
 
 gen zone = ""
 replace zone = "South" if state == "ANDHRA PRADESH"
@@ -92,8 +94,8 @@ replace zone = "East" if state == "WEST BENGAL"
 //keep if num>2
 drop if year==2017
 
-global inf share_roads share_pubtn  
-global con num subdistrictarea nearest_town_distance //village_area_sqkm
+global inf share_roads share_pubtn share_rails
+global con num subdistrictarea nearest_town_distance sc_pop_share st_pop_share //village_area_sqkm
 global med phc mcwc veterinary_hospital aanganwadi
 global edu p_school m_school h_school ssc_school iti
 global edu_access p_sch_per_1000 m_sch_per_1000 h_sch_per_1000 ///
@@ -102,8 +104,10 @@ global med_access phc_per_1000 mcwc_per_1000 vet_per_1000 aanganwadi_per_1000
 
 
 gen edu2 = p_school + m_school + h_school + ssc_school + iti
-gen med2 = phc + aanganwadi + veterinary_hospital
+gen med2 = phc + aanganwadi + veterinary_hospital + dispensary
 gen adm2 = cooperative_bank + mandis + post_office
+
+label var med2 "Medical Facilities"
 
 gen edu2_per1000 = edu2/no_1000s
 gen med2_per1000 = med2/no_1000s
@@ -123,25 +127,21 @@ drop if inlist(state, "ANDHRA PRADESH", "TELANGANA", "KARNATAKA", "KERALA", ///
 						"TAMIL NADU","MAHARASHTRA","GUJARAT","GOA")
 						
 
-// Pooled OLS
-reg alesina med_per_1000 edu_per_1000 adm_per_1000 $inf $con i.year i.subdist, vce(cluster subdist)
-	est store pols
-	estadd local fe Yes
-
-esttab pols using "test_pols.tex", replace /// a6 a7
-    keep(edu_per_1000 med_per_1000 adm_per_1000 ///
-        $inf $con _cons) ///
-    star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
-    label stats(r2 fe N, fmt(%9.3f %9.0f %9.0fc) ///
-    labels("R-squared" "Fixed Effects" "Number of observations")) ///
-    plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
-    varlabels(_cons Constant)
-	
-reg alesina med edu adm share_roads share_pubtn population $con i.year i.subdist, vce(cluster subdist)
+// Pooled OLS	
+reg alesina med edu adm share_roads share_pubtn population $con i.year ///
+			i.dist, robust
 	est store pols2
 	estadd local fe Yes
+reg alesina med edu adm share_roads share_pubtn population $con i.year ///
+			i.dist if inlist(zone, "South", "West"), robust
+	est store pols2sw
+	estadd local fe Yes
+reg alesina med edu adm share_roads share_pubtn population $con i.year ///
+			i.dist if inlist(zone, "North", "East","Central"), robust
+	est store pols2ne
+	estadd local fe Yes
 	
-esttab pols2 using "test_pols2.tex", replace /// a6 a7
+esttab pols2 pols2sw pols2ne using "test_pols2.tex", replace /// a6 a7
     keep(edu med adm share_roads share_pubtn population ///
          $con _cons) ///
     star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
@@ -153,20 +153,27 @@ esttab pols2 using "test_pols2.tex", replace /// a6 a7
 	
 *****************************************************************
 *****************************************************************
+*************************** Panel *******************************
+*****************************************************************
+*****************************************************************
 
 // xtreg
 xtset subdist year
 xtdescribe
-xtreg alesina med edu adm $inf population $con i.year, fe //vce(cluster subdist)
+
+xi: xtreg alesina med edu adm $inf population $con i.year ///
+			, fe vce(cluster dist)
 	est store s1
 	estadd local fe Yes
-	
-xtreg alesina med edu adm $inf population $con i.year if inlist(zone, "South", "West"), fe
+xi: xtreg alesina med edu adm $inf population $con i.year ///
+			if inlist(zone, "South", "West"), fe vce(cluster dist)
 	est store s2
 	estadd local fe Yes
-xtreg alesina med edu adm $inf population $con i.year if inlist(zone, "Central", "East", "North"), fe
+xi: xtreg alesina med edu adm $inf population $con i.year ///
+			if inlist(zone, "Central", "East", "North"), fe vce(cluster dist)
 	est store s3
 	estadd local fe Yes
+	
 * Combine all the stored results into one LaTeX file
 esttab s1 s2 s3 using "test_panel_sum.tex", replace /// a6 a7
     keep(edu med adm share_roads share_pubtn population ///
@@ -177,7 +184,7 @@ esttab s1 s2 s3 using "test_panel_sum.tex", replace /// a6 a7
     plain b(%9.4e) se(%9.4e) se nonumbers lines parentheses fragment ///
     varlabels(_cons Constant)
 
-	
+
 * Get the list of unique states
 levelsof state, local(states)
 
@@ -194,7 +201,7 @@ foreach state of local states {
  
 	xtset subdist year
     * Run regression on the subset data
-    xtreg alesina med edu adm $inf population  $con i.year if `state_subset', fe
+    xi: xtreg alesina med edu adm $inf population $con i.year if `state_subset', re vce(cluster subdist)
     est store `state_name_clean' // Store the results with a unique name
     estadd local fe Yes // Add fixed effects information
 }
@@ -212,13 +219,30 @@ esttab p1 state* using "test_panel_sum.tex", replace /// a6 a7
 *****************************************************************
 *****************************************************************
 
-xtreg alesina med_per_1000 edu_per_1000  adm_per_1000 $inf $con  i.year, fe //vce(cluster subdist)
+* Using fe and dist cluster
+
+xtreg alesina med edu adm $inf population $con i.year ///
+			, re vce(cluster subdist)
+xtreg alesina med edu adm $inf population $con i.year ///
+			if inlist(zone, "South", "West"), re vce(cluster subdist)
+xtreg alesina med edu adm $inf population $con i.year ///
+			if inlist(zone, "Central", "East", "North"), re vce(cluster subdist)
+
+
+*****************************************************************
+*****************************************************************
+
+/*
+xtreg alesina med_per_1000 edu_per_1000  adm_per_1000 $inf $con  ///
+			i.year, fe vce(cluster dist)
 	est store a1
 	estadd local fe Yes
-xtreg alesina med_per_1000 edu_per_1000  adm_per_1000 $inf $con  i.year if inlist(zone, "South", "West"), fe //vce(cluster subdist)
+xtreg alesina med_per_1000 edu_per_1000  adm_per_1000 $inf $con  ///
+			i.year if inlist(zone, "South", "West"), fe vce(cluster dist)
 	est store a2
 	estadd local fe Yes
-xtreg alesina med_per_1000 edu_per_1000  adm_per_1000 $inf $con  i.year if inlist(zone, "Central", "East", "North"), fe //vce(cluster subdist)
+xtreg alesina med_per_1000 edu_per_1000  adm_per_1000 $inf $con  ///
+			i.year if inlist(zone, "Central", "East", "North"), fe vce(cluster dist)
 	est store a3
 	estadd local fe Yes
 
@@ -230,47 +254,50 @@ esttab a1 a2 a3 using "test_panel.tex", replace /// a6 a7
     labels("R-squared" "Fixed Effects" "Number of observations")) ///
     plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
     varlabels(_cons Constant)
+*/
 
-	
-* Get the list of unique states
-levelsof state, local(states)
+*****************************************************************
+*****************************************************************
+**************************** DID ********************************
+*****************************************************************
+*****************************************************************
 
-* Loop through each state and run the regression
-foreach state of local states {
-    di "Processing state: `state'"
-    
-    * Create a valid name for storing the estimates by replacing spaces and special characters
-    local state_name_clean = strtoname("state`state'")
-    
-    * Subset data for the current state
-    tempvar state_subset
-    gen `state_subset' = (state == "`state'")
- 
-	xtset subdist year
-    * Run regression on the subset data
-    qui xtreg alesina med_per_1000 edu_per_1000 adm_per_1000 $inf $con i.year if `state_subset', fe
-    est store `state_name_clean' // Store the results with a unique name
-    estadd local fe Yes // Add fixed effects information
-}
-
-* Combine all the stored results into one LaTeX file
-esttab p2 state* using "test_panel.tex", replace /// a6 a7
-    keep(edu_per_1000 med_per_1000 adm_per_1000 ///
-        $inf $con _cons) ///
+xtreg alesina i.treated##i.period med2 edu adm $inf population $con, ///
+			fe vce(cluster dist)
+	est store t1
+	estadd local fe Yes
+xtreg alesina i.treated##i.period med2 edu adm $inf population $con ///
+			if inlist(zone, "South", "West"), fe vce(cluster dist)
+	est store t2
+	estadd local fe Yes
+xtreg alesina i.treated##i.period med2 edu adm $inf population $con ///
+			if inlist(zone, "Central", "East", "North"), fe vce(cluster dist)
+	est store t3
+	estadd local fe Yes
+esttab t1 t2 t3 using "test_panel_1.tex", replace /// a6 a7
+    keep(edu med2 adm ///
+        $inf population $con _cons) ///
     star(* 0.10 ** 0.05 *** 0.01) collabels(none) ///
     label stats(r2 fe N, fmt(%9.3f %9.0f %9.0fc) ///
     labels("R-squared" "Fixed Effects" "Number of observations")) ///
-    plain b(%9.3f) se(%9.3f) se nonumbers lines parentheses fragment ///
-    varlabels(_cons Constant)
+    plain b(%9.3e) se(%9.3e) se nonumbers lines parentheses fragment ///
+    varlabels(_cons Constant)			
 
 *****************************************************************
 *****************************************************************
 
-xtreg alesina med_per_1000 edu_per_1000 adm_per_1000 $inf $con i.year, fe
+
+
+
+xi: xtreg alesina med edu adm $inf population $con i.year if inlist(zone, "South", "West"), fe vce(cluster dist)
 estimate store fe
-xtreg alesina med_per_1000 edu_per_1000 adm_per_1000 $inf $con i.year, re
-estimate store re
-hausman fe re
+xi: xtreg alesina med edu adm $inf population $con i.year if inlist(zone, "South", "West"), re vce(cluster subdist)
+xtoverid
+//estimate store re
+//hausman fe re
+
+*****************************************************************
+*****************************************************************
 
 xtreg alesina med edu adm $inf population $con i.year, fe 
 	est store t1
