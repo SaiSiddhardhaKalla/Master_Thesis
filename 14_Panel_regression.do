@@ -13,7 +13,7 @@ log using "011_Panel.log", replace
 *********************************************************************************************************************************************************
 
 
-//import delimited "Panel_Area.csv", clear // 
+//import delimited "Panel_Raw22.csv", clear // 
 import delimited "Panel_Raw.csv", clear // This is main file
 //import delimited "Panel_Clean.csv", clear // 
 
@@ -163,15 +163,15 @@ xtset subdist year
 xtdescribe
 
 xi: xtreg alesina med edu adm $inf population $con i.year ///
-			, fe vce(cluster dist)
+			, fe vce(cluster subdist)
 	est store s1
 	estadd local fe Yes
 xi: xtreg alesina med edu adm $inf population $con i.year ///
-			if inlist(zone, "South", "West"), fe vce(cluster dist)
+			if inlist(zone, "South", "West"), fe vce(cluster subdist)
 	est store s2
 	estadd local fe Yes
 xi: xtreg alesina med edu adm $inf population $con i.year ///
-			if inlist(zone, "Central", "East", "North"), fe vce(cluster dist)
+			if inlist(zone, "Central", "East", "North"), fe vce(cluster subdist)
 	est store s3
 	estadd local fe Yes
 	
@@ -298,15 +298,15 @@ esttab a1 a2 a3 using "test_panel.tex", replace /// a6 a7
 *****************************************************************
 
 xtreg alesina i.treated##i.period med2 edu adm $inf population $con, ///
-			fe vce(cluster dist)
+			fe vce(cluster subdist)
 	est store t1
 	estadd local fe Yes
 xtreg alesina i.treated##i.period med2 edu adm $inf population $con ///
-			if inlist(zone, "South", "West"), fe vce(cluster dist)
+			if inlist(zone, "South", "West"), fe vce(cluster subdist)
 	est store t2
 	estadd local fe Yes
 xtreg alesina i.treated##i.period med2 edu adm $inf population $con ///
-			if inlist(zone, "Central", "East", "North"), fe vce(cluster dist)
+			if inlist(zone, "Central", "East", "North"), fe vce(cluster subdist)
 	est store t3
 	estadd local fe Yes
 esttab t1 t2 t3 using "DiD_binary.tex", replace /// a6 a7
@@ -320,15 +320,15 @@ esttab t1 t2 t3 using "DiD_binary.tex", replace /// a6 a7
 *****************************************************************
 
 xtreg alesina c.density##i.period  med2 edu adm $inf population $con, ///
-			fe vce(cluster dist)
+			fe vce(cluster subdist)
 	est store t4
 	estadd local fe Yes
 xtreg alesina c.density##i.period med2 edu adm $inf population $con ///
-			if inlist(zone, "South", "West"), fe vce(cluster dist)
+			if inlist(zone, "South", "West"), fe vce(cluster subdist)
 	est store t5
 	estadd local fe Yes
 xtreg alesina c.density##i.period med2 edu adm $inf population $con ///
-			if inlist(zone, "Central", "East", "North"), fe vce(cluster dist)
+			if inlist(zone, "Central", "East", "North"), fe vce(cluster subdist)
 	est store t6
 	estadd local fe Yes
 esttab t4 t5 t6 using "DiD_intensity.tex", replace /// a6 a7
@@ -340,11 +340,11 @@ esttab t4 t5 t6 using "DiD_intensity.tex", replace /// a6 a7
 	
 
 xtreg alesina i.treated##i.period##i.reg med2 edu adm $inf population $con, ///
-			fe vce(cluster dist)
+			fe vce(cluster subdist)
 	est store d1
 	estadd local fe Yes
 xtreg alesina c.density##i.period##i.reg  med2 edu adm $inf population $con, ///
-			fe vce(cluster dist)
+			fe vce(cluster subdist)
 	est store d2
 	estadd local fe Yes	
 esttab d2 using "DiD_3D.tex", replace /// a6 a7
