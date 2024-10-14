@@ -7,13 +7,16 @@ pause on
 #delimit ;
 cd "/Users/sid/Library/CloudStorage/OneDrive-DeakinUniversity/UDocs - D/DataSets/ma2020/" ; // home folder
 #delimit cr
-log using "xxx.log", replace
+log using "xxx_dhs3.log", replace
 *********************************************************************************************************************************************************
 *********************************************************************************************************************************************************
 
+timer clear
+timer on 1
+
 cls
 clear all
-import delimited "dhs2.csv", clear
+import delimited "dhs3.csv", clear
 
 set matsize 8000
 
@@ -78,6 +81,7 @@ label var reg "Region"
 
 
 
+
 drop if missing(treated)
 drop if missing(period)
 drop if missing(fertility)
@@ -85,12 +89,17 @@ drop if missing(fertility)
 gen dob = 1 if respondentsyearofbirth >= 1989
 replace dob = 0 if respondentsyearofbirth < 1989
 
+gen age_2019 = 2019 - respondentsyearofbirth
+
+//drop if age_2019>35
+//drop if age_2019<19
+
 **************************************************************************
 **************************************************************************
 
 //mlogit fertility i.treated##i.dob edu asha, base (2) vce(cluster gp_encode)
-mlogit type_work i.treated##i.dob edu asha ///
-				, base (1) vce(cluster gp_encode)
+mlogit fertility i.treated##i.dob edu asha ///
+				ser_famplan ser_antenatal, base (2) vce(cluster gp_encode)
 	eststo full
 margins, at(dob=(0 1) treated=(0 1)) post
 matrix list e(b)
@@ -192,7 +201,7 @@ display `z'
 
 //mlogit fertility i.treated##i.dob if reg==0 , base (2)
 mlogit fertility i.treated##i.dob edu asha  ///
-				ser_famplan ser_antenatal if reg==0 , base (2) vce(cluster gp_encode)			
+				ser_famplan if reg==0 , base (2) vce(cluster gp_encode)			
 	eststo NE
 margins, at(dob=(0 1) treated=(0 1)) post
 matrix list e(b)
@@ -475,6 +484,9 @@ tab dob
 tab dob if work==1
 tab dob if work==0
 
+
+
+/*
 logit work i.treated##i.dob asha edu $services, vce(cluster gp_encode)
 margins treated, dydx(dob) pwcompare
 
@@ -483,26 +495,51 @@ margins treated, dydx(dob) pwcompare
 
 logit work i.treated##i.dob asha edu $services if reg ==1, vce(cluster gp_encode)
 margins treated, dydx(dob) pwcompare
+*/
 
 logit work i.treated##i.dob asha edu $services, robust
 margins treated, dydx(dob) pwcompare
 
-logit work i.treated##i.dob asha edu $services if reg==0, robust
+logit work i.treated##i.dob asha edu $services if reg==1, robust
 margins treated, dydx(dob) pwcompare
 
-logit work i.treated##i.dob asha edu $services if reg ==1, robust
+logit work i.treated##i.dob asha edu $services if reg ==0, robust
 margins treated, dydx(dob) pwcompare
 
 
-local differencework =  0.0343914 - ( -0.0079818) 
+local differencework =  0.0319266 - ( -0.0090399) 
 display "Difference: `differencework'"
 * Calculate the Combined Standard Error
 *local se_combinedwork = sqrt(0.0220501^2 + 0.0115321^2)
-local se_combinedwork = sqrt(0.0134282^2 + 0.006187^2)
+local se_combinedwork = sqrt(0.0188531^2 + 0.0094484^2)
 display "Combined SE: `se_combinedwork'"
 * Calculate the Z-Score
 local z_scorework = `differencework' / `se_combinedwork'
 display "Z-Score: `z_scorework'"
+
+
+gen another = 0
+replace another = 1 if fertilitypreference=="have another"
+
+gen no_more = 0
+replace no_more = 1 if fertilitypreference=="no more"
+
+gen infecund = 0
+replace infecund = 1 if fertilitypreference=="declared infecund"
+
+gen sterilized = 0
+replace sterilized = 1 if fertilitypreference=="sterilized (respondent or partner)"
+
+gen undecided = 0
+replace undecided = 1 if fertilitypreference=="undecided"
+
+logit work another no_more sterilized undecided asha edu $services, vce(cluster gp_encode)
+
+logit work another no_more sterilized undecided asha edu $services if reg==1, robust
+
+logit work another no_more sterilized undecided asha edu $services if reg==0, robust
+
+
 
 *****************************************
 *****************************************
@@ -1089,6 +1126,12 @@ restore
 
 **************************************************************************
 **************************************************************************  
+
+* Stop timer 1
+timer off 1
+
+* Display and log the time taken
+timer list 1
   
 log close
 
