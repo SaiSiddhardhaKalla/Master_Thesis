@@ -79,12 +79,19 @@ gen reg = 0
 replace reg = 1 if region=="A"
 label var reg "Region"
 
+gen hindu = 0
+replace hindu = 1 if religion=="hindu"
+label var hindu "Hindu"
 
-
+gen musl = 0
+replace musl = 1 if religion=="muslim"
+label var musl "Muslim"
 
 drop if missing(treated)
 drop if missing(period)
 drop if missing(fertility)
+
+global rel hindu musl  
 
 gen dob = 1 if respondentsyearofbirth >= 1989
 replace dob = 0 if respondentsyearofbirth < 1989
@@ -485,7 +492,6 @@ tab dob if work==1
 tab dob if work==0
 
 
-
 /*
 logit work i.treated##i.dob asha edu $services, vce(cluster gp_encode)
 margins treated, dydx(dob) pwcompare
@@ -497,13 +503,13 @@ logit work i.treated##i.dob asha edu $services if reg ==1, vce(cluster gp_encode
 margins treated, dydx(dob) pwcompare
 */
 
-logit work i.treated##i.dob asha edu $services, robust
+logit work i.treated##i.dob asha edu $services $rel, robust
 margins treated, dydx(dob) pwcompare
 
-logit work i.treated##i.dob asha edu $services if reg==1, robust
+logit work i.treated##i.dob asha edu $services $rel if reg==1, robust
 margins treated, dydx(dob) pwcompare
 
-logit work i.treated##i.dob asha edu $services if reg ==0, robust
+logit work i.treated##i.dob asha edu $services $rel if reg ==0, robust
 margins treated, dydx(dob) pwcompare
 
 
